@@ -1,4 +1,4 @@
-#!/home/bin/python2
+#!/usr/bin/env python
 
 import multiprocessing;
 import string;
@@ -37,7 +37,7 @@ def main():
 
 
 	# optional
-	parser.add_argument("--python_string", default="python2.7", help="Command that specifies which python2.x interpreter has to be used, required for running read variant mapping script.")
+	parser.add_argument("--python_string", default="python", help="Command that specifies which python interpreter has to be used, required for running read variant mapping script.")
 	parser.add_argument("--haplo_count_bam_exclude", default="", help="Comma separated list of BAMs to exclude when generating haplotypic counts (outputted in o.haplotypic_counts.txt). When left blank haplotypic counts will be generated for all input BAMs, otherwise will they will not be generated for the BAMs specified here. Specify libraries by index where 1 = first library in --bam list, 2 = second, etc...")
 	parser.add_argument("--haplo_count_blacklist", default="", help="BED file containing genomic intervals to be excluded from haplotypic counts. Reads from any variants which lie within these regions will not be counted for haplotypic counts.")
 	parser.add_argument("--cc_threshold", type=float, default=0.01, help="Threshold for significant conflicting variant configuration. The connection between any two variants with a conflicting configuration having p-value lower than this threshold will be removed.")
@@ -232,7 +232,7 @@ def parse_sample(sample_name, map_sample_column, bam_file, sample_out_path, cont
 	if args.haplo_count_blacklist != "":
 		fun_flush_print("#1b. Loading haplotypic count blacklist intervals...");
 		raw_interval = subprocess.check_output("set -euo pipefail && "+"bedtools intersect -a "+vcf_path+" -b "+args.haplo_count_blacklist+" | cut -f 1-2", shell=True, executable='/bin/bash')
-		for line in raw_interval.split("\n"):
+		for line in raw_interval.decode().split("\n"):
 			columns = line.replace("\n","").split("\t");
 			if len(columns) > 1:
 				xchr = columns[0];
@@ -455,7 +455,7 @@ def process_vcf(stream_vcf, chromosome, contig_ban, set_haplo_blacklist,
 		total_indels_excluded += output[2];
 
 	fun_flush_print("          %d heterozygous sites being used for phasing (%d filtered, %d indels excluded, %d unphased)"%(het_count,filter_count,total_indels_excluded,unphased_count));
-	print
+	print('')
 
 	if het_count == 0:
 		fatal_error("No heterozygous sites that passed all filters were included in the analysis, phASER cannot continue. Check blacklist and pass_only arguments.");
@@ -492,7 +492,7 @@ def process_vcf(stream_vcf, chromosome, contig_ban, set_haplo_blacklist,
 		isize_list = isize_list * len(bam_list);
 	elif len(mapq_list) != len(isize_list):
 		fatal_error("Number of isize values and input BAMs does not match. Supply either one isize to be used for all BAMs or one isize per input BAM.");
-	isize_list = map(float, isize_list);
+	isize_list = list(map(float, isize_list));
 
 	#paired_end
 	paired_end_list = args.paired_end.split(",");
@@ -543,7 +543,7 @@ def process_vcf(stream_vcf, chromosome, contig_ban, set_haplo_blacklist,
 		use_as_cutoff = False;
 
 		if args.as_q_cutoff > 0:
-			alignment_scores = map(int,[x for x in subprocess.check_output("set -euo pipefail && "+"cut -f 5 "+" ".join(result_files), shell=True, executable='/bin/bash').split("\n") if x != ""]);
+			alignment_scores = list(map(int,[x for x in subprocess.check_output("set -euo pipefail && "+"cut -f 5 "+" ".join(result_files), shell=True, executable='/bin/bash').decode().split("\n") if x != ""]));
 			if len(alignment_scores) == 0:
 				fun_flush_print("          no alignment score value found in reads, cannot use cutoff");
 			else:
@@ -890,8 +890,8 @@ def process_vcf(stream_vcf, chromosome, contig_ban, set_haplo_blacklist,
 					if other_variant+":1" in dict_allele_connections[allele]:
 						total_connections += 1;
 
-		supporting_connections = supporting_connections / 2;
-		total_connections = total_connections / 2;
+		supporting_connections = supporting_connections // 2;
+		total_connections = total_connections // 2;
 
 		if args.unique_ids == 0:
 			rsids = [dict_variant_reads[x]['rsid'] for x in variants];
@@ -899,7 +899,7 @@ def process_vcf(stream_vcf, chromosome, contig_ban, set_haplo_blacklist,
 			rsids = variants;
 
 		chrs = [dict_variant_reads[x]['chr'] for x in variants];
-		positions = map(int, [dict_variant_reads[x]['pos'] for x in variants]);
+		positions = list(map(int, [dict_variant_reads[x]['pos'] for x in variants]));
 
 		hap_p = 0;
 		haplotype_pvalue_lookup[list_to_string(variants)] = hap_p;
@@ -995,7 +995,7 @@ def process_vcf(stream_vcf, chromosome, contig_ban, set_haplo_blacklist,
 
 					# now select the phase with the most MAF support
 					if sum(phase_support) > 0:
-						cor_phase_stat = max(phase_support) / sum(phase_support);
+						cor_phase_stat = max(phase_support) // sum(phase_support);
 						maf_phased = True;
 
 						if phase_support[0] > phase_support[1]:
@@ -1382,7 +1382,7 @@ def generate_mapping_table(input):
 			info_fields = annotation_to_dict(vcf_columns[7])
 			if args.gw_af_field in info_fields:
 				# make sure to get the right index if multi-allelic site
-				afs = map(float, info_fields[args.gw_af_field].split(","));
+				afs = list(map(float, info_fields[args.gw_af_field].split(",")));
 
 				# make sure that there are the same number of allele frequencies as alternative variants
 				if len(afs) == len(alt_alleles):
@@ -1529,7 +1529,7 @@ def phase_block(input):
 		while len(remaining_hap_pool) > 0:
 			# this will construct many iterations of the same haplotype need to filter it out;
 			# start the process with a variant pair;
-			seed_var = remaining_hap_pool.keys()[0];
+			seed_var = list(remaining_hap_pool.keys())[0];
 			seed = set([seed_var] + list(remaining_hap_pool[seed_var]));
 			del remaining_hap_pool[seed_var];
 			set_remaining_hap_pool.remove(seed_var);
@@ -1853,9 +1853,9 @@ def write_vcf(out_prefix, chromosome_of_interest):
 
 	return([unphased_phased, phase_corrections]);
 
-def str_join(joiner,list):
-	list = map(str, list);
-	return(joiner.join(list));
+def str_join(joiner,lst):
+	lst = map(str, lst);
+	return(joiner.join(lst));
 
 def build_haplotypes(input):
 	dict_variant_overlap = copy.deepcopy(input);
@@ -1866,7 +1866,7 @@ def build_haplotypes(input):
 	while len(remaining_hap_pool) > 0:
 		# this will construct many iterations of the same haplotype need to filter it out;
 		# start the process with a variant pair;
-		seed_var = remaining_hap_pool.keys()[0];
+		seed_var = list(remaining_hap_pool.keys())[0];
 		seed = set([seed_var] + list(remaining_hap_pool[seed_var]));
 		del remaining_hap_pool[seed_var];
 		set_remaining_hap_pool.remove(seed_var);
@@ -2053,7 +2053,7 @@ def pool_split(threads, data):
 	pool_size = min([args.max_items_per_thread, optimal_pool_size]);
 
 	if pool_size > 0:
-		pool_inputs = data_length / pool_size;
+		pool_inputs = data_length // pool_size;
 
 		for i in range(0,pool_inputs):
 			#last pool gets the remaining reads
@@ -2142,7 +2142,7 @@ def phase_v3(input):
 
 		for i in range(1, len(sub_block_phases)):
 			step_phases = [final_phase,sub_block_phases[i]];
-			used_vars = sum([sum([len(y) for y in x]) for x in step_phases]) / 2;
+			used_vars = sum([sum([len(y) for y in x]) for x in step_phases]) // 2;
 			#print(used_vars);
 			new_phase = sub_block_phase(variants[split_start:split_start+used_vars], allele_connections, step_phases);
 			# if phasing including the next block includes uncertainty then need to split
@@ -2188,7 +2188,7 @@ def resolve_phase(variants, allele_connections, clean_connections = False):
 
 	remaining_hap_pool = copy.deepcopy(allele_connections);
 	set_remaining_hap_pool = set(remaining_hap_pool.keys());
-	seed_var = remaining_hap_pool.keys()[0];
+	seed_var = list(remaining_hap_pool.keys())[0];
 	seed = set([seed_var] + list(remaining_hap_pool[seed_var]));
 	del remaining_hap_pool[seed_var];
 	set_remaining_hap_pool.remove(seed_var);

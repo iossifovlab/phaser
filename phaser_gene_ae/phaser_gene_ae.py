@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import pandas;
 import gzip;
 from intervaltree import IntervalTree;
@@ -154,14 +156,14 @@ def main():
 				log2_afc = zero_log(zero_divide(dict_features[index]['aCount'],dict_features[index]['bCount']),2);
 
 				if total_cov >= args.min_cov:
-					stream_out.write("\t".join(map(str,[dict_features[index]['chr'],dict_features[index]['start'],dict_features[index]['stop'],dict_features[index]['name'],dict_features[index]['aCount'],dict_features[index]['bCount'],total_cov, log2_afc, n_variants, ",".join(dict_features[index]['variants']),1,xbam]))+"\n");
+					stream_out.write("\t".join(map(str,[dict_features[index]['chr'],dict_features[index]['start'],dict_features[index]['stop'],dict_features[index]['name'],dict_features[index]['aCount'],dict_features[index]['bCount'],total_cov, '%.12g'%log2_afc, n_variants, ",".join(dict_features[index]['variants']),1,xbam]))+"\n");
 			elif (dict_features[index]['aCount'] + dict_features[index]['bCount']) < (dict_features[index]['unphased_aCount'] + dict_features[index]['unphased_bCount']):
 				# use unphased count (this is just the highest covered haplotype block or single variant)
 				total_cov = dict_features[index]['unphased_aCount']+dict_features[index]['unphased_bCount'];
 				n_variants = len(dict_features[index]['unphased_variants']);
 				log2_afc = zero_log(zero_divide(dict_features[index]['unphased_aCount'],dict_features[index]['unphased_bCount']),2);
 				if total_cov >= args.min_cov:
-					stream_out.write("\t".join(map(str,[dict_features[index]['chr'],dict_features[index]['start'],dict_features[index]['stop'],dict_features[index]['name'],dict_features[index]['unphased_aCount'],dict_features[index]['unphased_bCount'],total_cov, log2_afc, n_variants, ",".join(dict_features[index]['unphased_variants']),0,xbam]))+"\n");
+					stream_out.write("\t".join(map(str,[dict_features[index]['chr'],dict_features[index]['start'],dict_features[index]['stop'],dict_features[index]['name'],dict_features[index]['unphased_aCount'],dict_features[index]['unphased_bCount'],total_cov, '%.12g'%log2_afc, n_variants, ",".join(dict_features[index]['unphased_variants']),0,xbam]))+"\n");
 			elif args.min_cov == 0:
 				stream_out.write("\t".join(map(str,[dict_features[index]['chr'],dict_features[index]['start'],dict_features[index]['stop'],dict_features[index]['name'],0,0,0, float('nan'), 0, "",float('nan'),xbam]))+"\n");
 
@@ -198,8 +200,8 @@ def variant_feature_reads(row,feature):
 			if len(xvars) == 1:
 				# if haplotype only has one variant then there are no read names since they are not needed
 				# generate some fake read ids
-				hap_a_reads += map(str,range(0,int(row['aCount'])));
-				hap_b_reads += map(str,range(0,int(row['bCount'])));
+				hap_a_reads += list(map(str,range(0,int(row['aCount']))));
+				hap_b_reads += list(map(str,range(0,int(row['bCount']))));
 			else:
 				hap_a_reads += str(row['aReads']).split(";")[xvar_index].split(",");
 				hap_b_reads += str(row['bReads']).split(";")[xvar_index].split(",");

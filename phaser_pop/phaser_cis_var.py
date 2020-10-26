@@ -49,7 +49,7 @@ def main():
 	df_pairs = pandas.read_csv(args.pairs, sep="\t", index_col=False);
 	if args.ignore_v == 1: df_pairs['gene_id'] = [x.split(".")[0] for x in df_pairs['gene_id']];
 	if args.chr != "":
-		df_pairs['var_contig'] = map(str, df_pairs['var_contig'])
+		df_pairs['var_contig'] = list(map(str, df_pairs['var_contig']))
 		df_pairs = df_pairs[(df_pairs.var_contig == args.chr)];
 
 	print("#3 Loading phASER BED...")
@@ -139,7 +139,7 @@ def measure_effect(xindices):
 							xgt = xrecord[xsamp].split(":")[gt_index];
 							# need phased genotype data
 							if "|" in xgt:
-								counts = map(float,row_phaser[dict_map[xsamp]].split("|"));
+								counts = list(map(float,row_phaser[dict_map[xsamp]].split("|")));
 								if sum(counts) >= args.min_cov:
 									afc_phaser = log(float(counts[0]+args.pc)/float(counts[1]+args.pc),2);
 									if "0" in xgt and "1" in xgt:
@@ -160,8 +160,8 @@ def measure_effect(xindices):
 					
 					# calculate |aFC|
 					abs_afcs = [[],[]];
-					abs_afcs[0] = map(abs,afcs[0]);
-					abs_afcs[1] = map(abs,afcs[1]);
+					abs_afcs[0] = list(map(abs,afcs[0]));
+					abs_afcs[1] = list(map(abs,afcs[1]));
 
 					# bootstrap 95% CIs
 					het_ci = bootstrap_ci(afcs[0],args.bs,numpy.median,True)
