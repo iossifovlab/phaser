@@ -3,10 +3,10 @@ package:
     version: 1.1.1
 
 source:
-    path: phaser-1.1.1
+    path: .
 
 build:
-    number: 0
+    number: 1
 
 requirements:
     build:
