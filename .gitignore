@@ -2,4 +2,5 @@
 build
 dist
 phASER.egg-info
-phaser/read_variant_map.c
+phASER/_read_variant_map.c
+phASER/__pycache__
