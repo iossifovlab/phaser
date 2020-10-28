@@ -1,7 +1,6 @@
 import os, sys, sysconfig
 
-from setuptools import Extension
-from distutils.core import setup
+from setuptools import Extension, setup
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext
 
@@ -29,12 +28,12 @@ CMDCLS = {
                 'build_ext': BuildExtWithoutPlatformSuffix
          }
 
-ext_modules = [Extension('phaser.read_variant_map',['phaser/read_variant_map.py'])]
+ext_modules = [Extension('phASER.read_variant_map',['phASER/_read_variant_map.py'])]
 
 setup(
   name          = 'phASER', #'phASER Read Variant Mapper',
-  packages      = ['phaser'],
-  scripts       = ['phaser/phaser.py','phaser_gene_ae/phaser_gene_ae.py'],
-  cmdclass      = CMDCLS,
+  packages      = ['phASER'],
+  scripts       = ['phaser/phaser.py','phaser/call_read_variant_map.py', 'phaser_gene_ae/phaser_gene_ae.py'],
+  #cmdclass      = CMDCLS,
   ext_modules   = cythonize(ext_modules,compiler_directives={'language_level' : "3"}),
 )

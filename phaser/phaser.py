@@ -37,7 +37,7 @@ def main():
 
 
 	# optional
-	parser.add_argument("--python_string", default="python", help="Command that specifies which python interpreter has to be used, required for running read variant mapping script.")
+	#parser.add_argument("--python_string", default="python", help="Command that specifies which python interpreter has to be used, required for running read variant mapping script.")
 	parser.add_argument("--haplo_count_bam_exclude", default="", help="Comma separated list of BAMs to exclude when generating haplotypic counts (outputted in o.haplotypic_counts.txt). When left blank haplotypic counts will be generated for all input BAMs, otherwise will they will not be generated for the BAMs specified here. Specify libraries by index where 1 = first library in --bam list, 2 = second, etc...")
 	parser.add_argument("--haplo_count_blacklist", default="", help="BED file containing genomic intervals to be excluded from haplotypic counts. Reads from any variants which lie within these regions will not be counted for haplotypic counts.")
 	parser.add_argument("--cc_threshold", type=float, default=0.01, help="Threshold for significant conflicting variant configuration. The connection between any two variants with a conflicting configuration having p-value lower than this threshold will be removed.")
@@ -109,14 +109,14 @@ def main():
 		tempfile.tempdir = args.temp_dir;
 
 	# check for needed files
-	needed_files = ['call_read_variant_map.py','read_variant_map.py'];
-	for xfile in needed_files:
-		if os.path.isfile(return_script_path()+"/"+xfile) == False:
-			fatal_error("File %s is needed for phASER to run."%xfile);
+	#needed_files = ['call_read_variant_map.py','read_variant_map.py'];
+	#for xfile in needed_files:
+	#	if os.path.isfile(return_script_path()+"/"+xfile) == False:
+	#		fatal_error("File %s/%s is needed for phASER to run."%(return_script_path(),xfile) );
 
 	# check that setup has been run
-	if os.path.isfile(return_script_path()+"/"+'read_variant_map.so') == False:
-		fatal_error("Read Variant Mapper module must be compiled by running 'python setup.py build_ext --inplace'.");
+	#if os.path.isfile(return_script_path()+"/"+'read_variant_map.so') == False:
+	#	fatal_error("Read Variant Mapper module must be compiled by running 'python setup.py build_ext --inplace'.");
 
 	# check that the VCF of interest exists in bgzipped form and is indexed
 	if os.path.isfile(args.vcf) == False:
@@ -1342,7 +1342,7 @@ def call_mapping_script(input):
 	mapping_result.close();
 
 	#Save error code from subprocess if not 0, file it writes is truncated and gives unexpected wrong results.
-	run_cmd = "samtools view -h "+bam+" '"+chrom+"': | samtools view -Sh "+samtools_arg+" -L "+bed_out+" -q "+mapq+" - | "+args.python_string+" "+return_script_path()+"/call_read_variant_map.py --baseq "+str(args.baseq)+" --splice 1 --isize_cutoff "+str(isize)+" --variant_table "+mapper_out+" --o "+mapping_result.name
+	run_cmd = "samtools view -h "+bam+" '"+chrom+"': | samtools view -Sh "+samtools_arg+" -L "+bed_out+" -q "+mapq+" - | call_read_variant_map.py --baseq "+str(args.baseq)+" --splice 1 --isize_cutoff "+str(isize)+" --variant_table "+mapper_out+" --o "+mapping_result.name
 	error_code = subprocess.check_call("set -euo pipefail && "+run_cmd, stdout=devnull, shell=True, executable='/bin/bash')
 	if error_code != 0:
 		raise RuntimeError("subprocess.call of call_read_variant_map.py exited with an error, with call: %s"%(run_cmd))
@@ -1412,7 +1412,7 @@ def generate_mapping_table(input):
 	return([chrom, het_count, total_indels_excluded, bed_out.name, mapper_out.name]);
 
 def return_script_path():
-	return os.path.dirname(os.path.realpath(sys.argv[0]));
+	return os.path.dirname(__file__) #os.path.realpath(sys.argv[0]));
 
 def generate_variant_dict(fields):
 	#read_name	variant_id	rs_id	read_allele	alignment_score	genotype	maf

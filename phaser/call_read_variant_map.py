@@ -1,5 +1,5 @@
 import argparse;
-import read_variant_map;
+from phASER import read_variant_map;
 
 # usage
 # samtools view -q 255 -L variants.bed NA06986.2.M_111215_4.bam | python2.7 call_read_variant_map.py

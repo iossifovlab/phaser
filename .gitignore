@@ -1,3 +1,5 @@
 .DS_Store
 build
+dist
+phASER.egg-info
 phaser/read_variant_map.c
